@@ -20,7 +20,7 @@ def plot_robot_and_obstacles(robot, obstacles, robot_radius, num_steps, sim_time
     robot_patch = Circle((robot[0, 0], robot[1, 0]),
                          robot_radius, facecolor='green', edgecolor='black')
     obstacle_list = []
-    for obstacle in range(np.shape(obstacles)[2]):
+    for obstacle in range(np.shape(obstacles)[0]):
         obstacle = Circle((0, 0), robot_radius,
                           facecolor='aqua', edgecolor='black')
         obstacle_list.append(obstacle)
@@ -33,10 +33,10 @@ def plot_robot_and_obstacles(robot, obstacles, robot_radius, num_steps, sim_time
         return [robot_patch] + [line] + obstacle_list
 
     def animate(i):
-        robot_patch.center = (robot[0, i], robot[1, i])
+        robot_patch.center = (robot[i,0], robot[i,1])
         for j in range(len(obstacle_list)):
-            obstacle_list[j].center = (obstacles[0, i, j], obstacles[1, i, j])
-        line.set_data(robot[0, :i], robot[1, :i])
+            obstacle_list[j].center = (obstacles[j, i, 0], obstacles[j, i, 1])
+        line.set_data(robot[:i,0], robot[:i,1])
         return [robot_patch] + [line] + obstacle_list
 
     init()

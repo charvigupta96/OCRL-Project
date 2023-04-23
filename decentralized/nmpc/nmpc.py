@@ -9,6 +9,7 @@ from utils.create_obstacles import create_obstacles
 import numpy as np
 from scipy.optimize import minimize, Bounds
 import time
+import copy
 
 SIM_TIME = 8.
 TIMESTEP = 0.1
@@ -26,30 +27,43 @@ HORIZON_LENGTH = int(4)
 NMPC_TIMESTEP = 0.3
 upper_bound = [(1/np.sqrt(2)) * VMAX] * HORIZON_LENGTH * 2
 lower_bound = [-(1/np.sqrt(2)) * VMAX] * HORIZON_LENGTH * 2
+no_agents = 5
+# agent priority- 0,1,2 ....
 
 
 def simulate(filename):
-    obstacles = create_obstacles(SIM_TIME, NUMBER_OF_TIMESTEPS)
+    # obstacles = create_obstacles(SIM_TIME, NUMBER_OF_TIMESTEPS)
 
-    start = np.array([5, 5])
-    p_desired = np.array([5, 5])
+    # automate task generation
+    starts = np.array([[5, 5], [7,8], [3,4],[9,3],[5,8]])
+    ps_desired = np.array([[7,8], [5,5], [5,7],[2,2],[7,2]])
 
-    robot_state = start
-    robot_state_history = np.empty((4, NUMBER_OF_TIMESTEPS))
+    # starts of all agents
+    robot_state = starts.astype(float)
 
-    for i in range(NUMBER_OF_TIMESTEPS):
+    # (p,v) history for all agents
+    robot_state_history = np.empty((no_agents, NUMBER_OF_TIMESTEPS+HORIZON_LENGTH, 4))
+
+    for i in range(no_agents):
+        for j in range(NUMBER_OF_TIMESTEPS):
         # predict the obstacles' position in future
-        obstacle_predictions = predict_obstacle_positions(obstacles[:, i, :])
-        xref = compute_xref(robot_state, p_desired,
+        # obstacle_predictions = predict_obstacle_positions(obstacles[:, i, :])
+            obstacle_predictions = robot_state_history[0:i, j:j+HORIZON_LENGTH, 0:2] # check if the result is in desired format
+
+            # find reference path (interpolation)
+            xref = compute_xref(robot_state[i], ps_desired[i],
                             HORIZON_LENGTH, NMPC_TIMESTEP)
-        # compute velocity using nmpc
-        vel, velocity_profile = compute_velocity(
-            robot_state, obstacle_predictions, xref)
-        robot_state = update_state(robot_state, vel, TIMESTEP)
-        robot_state_history[:2, i] = robot_state
+            # find path
+            # compute velocity using nmpc
+            vel, velocity_profile = compute_velocity(
+                robot_state[i], obstacle_predictions, xref)
+            interim = update_state(robot_state[i], vel, TIMESTEP)
+            robot_state[i] = interim
+            robot_state_history[i, j, 0:2] = robot_state[i]
+
 
     plot_robot_and_obstacles(
-        robot_state_history, obstacles, ROBOT_RADIUS, NUMBER_OF_TIMESTEPS, SIM_TIME, filename)
+        robot_state_history[0], robot_state_history[1:no_agents], ROBOT_RADIUS, NUMBER_OF_TIMESTEPS, SIM_TIME, filename)
 
 
 def compute_velocity(robot_state, obstacle_predictions, xref):
@@ -94,10 +108,13 @@ def tracking_cost(x, xref):
 def total_collision_cost(robot, obstacles):
     total_cost = 0
     for i in range(HORIZON_LENGTH):
+        if (obstacles.size==0):
+            continue
+        # obstacles = obstacles[0]
         for j in range(len(obstacles)):
-            obstacle = obstacles[j]
+            obs = obstacles[j][i]
             rob = robot[2 * i: 2 * i + 2]
-            obs = obstacle[2 * i: 2 * i + 2]
+            # obs = obstacle[2 * i: 2 * i + 2]
             total_cost += collision_cost(rob, obs)
     return total_cost
 
