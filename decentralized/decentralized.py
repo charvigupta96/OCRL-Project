@@ -3,7 +3,7 @@ import nmpc.nmpc as nmpc
 import argparse
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser()  
     parser.add_argument(
         "-m", "--mode", help="mode of obstacle avoidance; options: velocity_obstacle, or nmpc")
     parser.add_argument(

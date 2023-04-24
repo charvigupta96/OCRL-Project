@@ -27,7 +27,7 @@ HORIZON_LENGTH = int(4)
 NMPC_TIMESTEP = 0.3
 upper_bound = [(1/np.sqrt(2)) * VMAX] * HORIZON_LENGTH * 2
 lower_bound = [-(1/np.sqrt(2)) * VMAX] * HORIZON_LENGTH * 2
-no_agents = 5
+no_agents = 3
 # agent priority- 0,1,2 ....
 
 
@@ -35,8 +35,8 @@ def simulate(filename):
     # obstacles = create_obstacles(SIM_TIME, NUMBER_OF_TIMESTEPS)
 
     # automate task generation
-    starts = np.array([[5, 5], [7,8], [3,4],[9,3],[5,8]])
-    ps_desired = np.array([[7,8], [5,5], [5,7],[2,2],[7,2]])
+    starts = np.array([[5, 5], [7,8],[5,8]])
+    ps_desired = np.array([[7,8],[5,5], [7,2]])
 
     # starts of all agents
     robot_state = starts.astype(float)
@@ -60,7 +60,6 @@ def simulate(filename):
             interim = update_state(robot_state[i], vel, TIMESTEP)
             robot_state[i] = interim
             robot_state_history[i, j, 0:2] = robot_state[i]
-
 
     plot_robot_and_obstacles(
         robot_state_history[0], robot_state_history[1:no_agents], ROBOT_RADIUS, NUMBER_OF_TIMESTEPS, SIM_TIME, filename)
