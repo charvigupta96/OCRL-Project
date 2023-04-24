@@ -11,7 +11,7 @@ from scipy.optimize import minimize, Bounds
 import time
 import copy
 
-SIM_TIME = 18.
+SIM_TIME = 22.
 TIMESTEP = 0.1
 NUMBER_OF_TIMESTEPS = int(SIM_TIME/TIMESTEP)
 ROBOT_RADIUS = 0.5
@@ -36,14 +36,14 @@ def simulate(filename):
 
     # automate task generation
     starts = np.array([[5, 5], [7,8],[5,8]])
-    ps_desired = np.array([[7,8],[5,5], [7,2]])
+    ps_desired = np.array([[7,8],[4,4], [7,2]])
 
     # starts of all agents
     robot_state = starts.astype(float)
 
     # (p,v) history for all agents
-    static_obstacle = np.array([[6, 6]])
-    no_obs = 1
+    static_obstacle = np.array([[6, 6], [1,1]])
+    no_obs = 2
     robot_state_history = np.empty((no_agents+no_obs, NUMBER_OF_TIMESTEPS+HORIZON_LENGTH, 4))
     for i in range(no_obs):
         robot_state_history[i, :, 0:2] = static_obstacle[i]
@@ -65,7 +65,7 @@ def simulate(filename):
             robot_state_history[i+no_obs, j, 0:2] = robot_state[i]
 
     plot_robot_and_obstacles(
-        robot_state_history[0], robot_state_history[1:no_agents+no_obs], ROBOT_RADIUS, NUMBER_OF_TIMESTEPS, SIM_TIME, filename)
+        robot_state_history[0:no_obs], robot_state_history[no_obs:no_agents+no_obs], ROBOT_RADIUS, NUMBER_OF_TIMESTEPS, SIM_TIME, filename)
 
 
 def compute_velocity(robot_state, obstacle_predictions, xref):
