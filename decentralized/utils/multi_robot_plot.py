@@ -15,10 +15,15 @@ def plot_robot_and_obstacles(robot, obstacles, robot_radius, num_steps, sim_time
     ax = fig.add_subplot(111, autoscale_on=False, xlim=(0, 10), ylim=(0, 10))
     ax.set_aspect('equal')
     ax.grid()
-    line, = ax.plot([], [], '--r')
+    # line, = ax.plot([], [], '--r')
+    lines = []
+    plotcols = ["red", "blue", "green", "purple", "black", "brown", "orange"]
+    for index in range(obstacles.shape[0]):
+        lobj = ax.plot([],[],lw=2,color=plotcols[index])[0]
+        lines.append(lobj)
 
     robot_patch = Circle((robot[0, 0], robot[1, 0]),
-                         robot_radius, facecolor='green', edgecolor='black')
+                         robot_radius, facecolor='aqua', edgecolor='black')
     obstacle_list = []
     for obstacle in range(np.shape(obstacles)[0]):
         obstacle = Circle((0, 0), robot_radius,
@@ -29,15 +34,25 @@ def plot_robot_and_obstacles(robot, obstacles, robot_radius, num_steps, sim_time
         ax.add_patch(robot_patch)
         for obstacle in obstacle_list:
             ax.add_patch(obstacle)
-        line.set_data([], [])
-        return [robot_patch] + [line] + obstacle_list
+        for line in lines:
+            line.set_data([],[])
+        return [robot_patch] + [lines] + obstacle_list
 
     def animate(i):
         robot_patch.center = (robot[i,0], robot[i,1])
+        # line_x = robot[:i,0]
+        # line_y = robot[:i,1]
         for j in range(len(obstacle_list)):
             obstacle_list[j].center = (obstacles[j, i, 0], obstacles[j, i, 1])
-        line.set_data(robot[:i,0], robot[:i,1])
-        return [robot_patch] + [line] + obstacle_list
+            # line_x = np.concatenate((line_x, obstacles[j, :i, 0]))
+            # line_y = np.concatenate((line_y, obstacles[j, :i, 1]))
+        # line.set_data(line_x, line_y)
+        j = 0
+        for lnum,line in enumerate(lines):
+            line.set_data(obstacles[j, :i, 0], obstacles[j, :i, 0])
+            j+=1
+        
+        return [robot_patch] + [lines] + obstacle_list
 
     init()
     step = (sim_time / num_steps)

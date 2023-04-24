@@ -48,7 +48,7 @@ def simulate(filename):
         for j in range(NUMBER_OF_TIMESTEPS):
         # predict the obstacles' position in future
         # obstacle_predictions = predict_obstacle_positions(obstacles[:, i, :])
-            obstacle_predictions = robot_state_history[0:i, j:j+HORIZON_LENGTH, 0:2] # check if the result is in desired format
+            obstacle_predictions = robot_state_history[0:i, j:j+HORIZON_LENGTH, 0:2] 
 
             # find reference path (interpolation)
             xref = compute_xref(robot_state[i], ps_desired[i],
