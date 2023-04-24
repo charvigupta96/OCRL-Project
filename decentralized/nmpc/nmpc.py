@@ -11,7 +11,7 @@ from scipy.optimize import minimize, Bounds
 import time
 import copy
 
-SIM_TIME = 8.
+SIM_TIME = 18.
 TIMESTEP = 0.1
 NUMBER_OF_TIMESTEPS = int(SIM_TIME/TIMESTEP)
 ROBOT_RADIUS = 0.5
@@ -42,14 +42,17 @@ def simulate(filename):
     robot_state = starts.astype(float)
 
     # (p,v) history for all agents
-    robot_state_history = np.empty((no_agents, NUMBER_OF_TIMESTEPS+HORIZON_LENGTH, 4))
+    static_obstacle = np.array([[6, 6]])
+    no_obs = 1
+    robot_state_history = np.empty((no_agents+no_obs, NUMBER_OF_TIMESTEPS+HORIZON_LENGTH, 4))
+    for i in range(no_obs):
+        robot_state_history[i, :, 0:2] = static_obstacle[i]
 
     for i in range(no_agents):
         for j in range(NUMBER_OF_TIMESTEPS):
         # predict the obstacles' position in future
         # obstacle_predictions = predict_obstacle_positions(obstacles[:, i, :])
-            obstacle_predictions = robot_state_history[0:i, j:j+HORIZON_LENGTH, 0:2] 
-
+            obstacle_predictions = robot_state_history[0:i+no_obs, j:j+HORIZON_LENGTH, 0:2] # check if the result is in desired format
             # find reference path (interpolation)
             xref = compute_xref(robot_state[i], ps_desired[i],
                             HORIZON_LENGTH, NMPC_TIMESTEP)
@@ -59,10 +62,10 @@ def simulate(filename):
                 robot_state[i], obstacle_predictions, xref)
             interim = update_state(robot_state[i], vel, TIMESTEP)
             robot_state[i] = interim
-            robot_state_history[i, j, 0:2] = robot_state[i]
+            robot_state_history[i+no_obs, j, 0:2] = robot_state[i]
 
     plot_robot_and_obstacles(
-        robot_state_history[0], robot_state_history[1:no_agents], ROBOT_RADIUS, NUMBER_OF_TIMESTEPS, SIM_TIME, filename)
+        robot_state_history[0], robot_state_history[1:no_agents+no_obs], ROBOT_RADIUS, NUMBER_OF_TIMESTEPS, SIM_TIME, filename)
 
 
 def compute_velocity(robot_state, obstacle_predictions, xref):
